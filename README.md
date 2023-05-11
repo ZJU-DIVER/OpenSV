@@ -17,7 +17,9 @@
 
 ## What's New?
 
-TBD $\text{\color{red}{!in progress}}$
+$\text{\color{red}{!in progress}}$
+
+- May 2023: Upload dist to PyPI, `pip install opensv`
 
 ## Overview
 

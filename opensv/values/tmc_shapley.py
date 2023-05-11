@@ -1,41 +1,29 @@
-import numpy as np
-from random import shuffle, seed, randint, sample, choice
-from tqdm import tqdm
-from sklearn.metrics import accuracy_score
+from typing import Optional, Dict
 
-def tmc_shapley(trnX, trnY, devX, devY, clf, T=20, epsilon=0.001):
-    N = trnX.shape[0]
-    Idx = list(range(N)) # Indices
-    val, t = np.zeros((N)), 0
-    # Start calculation
-    val_T = np.zeros((T, N))
-    for t in tqdm(range(1, T+1)):
-        # Shuffle the data
-        shuffle(Idx)
-        val_t = np.zeros((N+1))
-        # pre-computed values (with all training data/without training data)
-        try:
-          clf.fit(trnX, trnY)
-          val_t[N] = accuracy_score(devY, clf.predict(devX))
-        except ValueError:
-          # Training set only has a single calss
-          val_t[N] = accuracy_score(devY, [trnY[0]]*len(devY))
-        #
-        for j in range(1,N+1):
-            if abs(val_t[N] - val_t[j-1]) < epsilon:
-                val_t[j] = val_t[j-1]
-            else:
-                # Extract the first $j$ data points
-                trnX_j = trnX[Idx[:j],:]
-                # print("trnX_j.shape = {}".format(trnX_j.shape))
-                trnY_j = trnY[Idx[:j]]
-                try:
-                    clf.fit(trnX_j, trnY_j)
-                    val_t[j] = accuracy_score(devY, clf.predict(devX))
-                except ValueError:
-                    # the majority vote
-                    val_t[j] = accuracy_score(devY, [trnY_j[0]]*len(devY))
-        # Update the data shapley values
-        val[Idx] = ((1.0*(t-1)/t))*val[Idx] + (1.0/t)*(val_t[1:] - val_t[:N])
-        val_T[t-1,:] = (np.array(val_t)[1:])[Idx]
-    return val
+import numpy as np
+from tqdm import trange
+
+from ..utils.utils import get_utility
+
+
+def tmc_shapley(x_train, y_train, x_valid, y_valid, clf, params: Optional[Dict] = None):
+    # Extract params
+    T = params.get('tmc_iter', 20)  # aka the number of permutations
+    epsilon = params.get('tmc_thresh', 1e-3)
+
+    N = len(y_train)
+    val = np.zeros((N))
+    idxes = list(range(N))
+
+    final_acc = get_utility(x_train, y_train, x_valid, y_valid, clf)
+    for _ in trange(T):
+        np.random.shuffle(idxes)
+        acc = 0  # init value
+        for i in range(1, N + 1):
+            if abs(final_acc - acc) < epsilon:
+                break
+            x_temp, y_temp = x_train[idxes[:j], :], y_train[idxes[:j]]
+            new_acc = get_utility(x_temp, y_temp, x_valid, y_valid, clf)
+            val[idxes[i]] += new_acc - acc
+            acc = new_acc
+    return val / T

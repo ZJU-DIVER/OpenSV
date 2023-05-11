@@ -1,0 +1,8 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "opensv"
+authors = [{name = "Haocheng Xia, Qiheng Sun, Xiang Li, Yuanzhi Xiao, Hongwei Zhang", email = "xiahc@zju.edu.cn"}]
+dynamic = ["version", "description"]

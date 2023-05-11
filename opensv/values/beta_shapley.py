@@ -1,64 +1,69 @@
-## beta_shapley.py
-## Implementation of Beta Shapley
+# impl refer to official repo of [Beta-Shapley]
+# (https://github.com/ykwon0407/beta_shapley/blob/master/betashap/ShapEngine.py)
+
+from typing import Optional, Dict
 
 import numpy as np
-from random import shuffle, seed, randint, sample, choice
-from tqdm import tqdm
-from sklearn.metrics import accuracy_score
+from tqdm import trange
 
-def beta_shapley(trnX, trnY, devX, devY, clf, alpha=1.0,
-                     beta=1.0, rho=1.0005, K=10, T=10):
-    """
-    alpha, beta - parameters for Beta distribution
-    rho - GR statistic threshold
-    K - number of Markov chains
-    T - upper bound of iterations
-    """
-    N = trnX.shape[0]
-    Idx = list(range(N)) # Indices
-    val, t = np.zeros((N, K, T+1)), 0
-    rho_hat = 2*rho
-    # val_N_list = []
+from ..utils.utils import get_utility, beta_weight_list, check_convergence
 
-    # Data information
-    N = len(trnY)
-    # Computation
-    # while np.any(rho_hat >= rho):
-    for t in tqdm(range(1, T+1)):
-        # print("Iteration: {}".format(t))
-        for j in range(N):
-            for k in range(K):
-                Idx = list(range(N))
-                Idx.remove(j) # remove j
-                s = randint(1, N-1)
-                sub_Idx = sample(Idx, s)
-                acc_ex, acc_in = None, None
-                # =========================
-                trnX_ex, trnY_ex = trnX[sub_Idx, :], trnY[sub_Idx]
-                try:
-                    clf.fit(trnX_ex, trnY_ex)
-                    acc_ex = accuracy_score(devY, clf.predict(devX))
-                except ValueError:
-                    acc_ex = accuracy_score(devY, [trnY_ex[0]]*len(devY))
-                # =========================
-                sub_Idx.append(j) # Add example j back for training
-                trnX_in, trnY_in = trnX[sub_Idx, :], trnY[sub_Idx]
-                try:
-                    clf.fit(trnX_in, trnY_in)
-                    acc_in = accuracy_score(devY, clf.predict(devX))
-                except ValueError:
-                    acc_in = accuracy_score(devY, [trnY_in[0]]*len(devY))
-                # Update the value
-                val[j,k,t] = ((t-1)*val[j,k,t-1])/t + (weight(j+1, N, alpha, beta)/t)*(acc_in - acc_ex)
-        # Update the Gelman-Rubin statistic rho_hat
-        if t > 3:
-            rho_hat = gr_statistic(val, t) # A temp solution for stopping
-            # print("rho_hat = {}".format(rho_hat[:5]))
-        if np.all(rho_hat < rho):
-            # terminate the outer loop earlier
-            break
-    # average all the sample values
-    # val_mean = val[:,:,1:t+1].mean(axis=2).mean(axis=1) # N
-    val_last = val[:,:,t].mean(axis=1)
-    # print(val_last)
-    return val_last
+
+def beta_shapley(x_train, y_train, x_valid, y_valid, clf, params: Optional[Dict] = None):
+    """_summary_
+
+    Args:
+        x_train (_type_): _description_
+        y_train (_type_): _description_
+        x_valid (_type_): _description_
+        y_valid (_type_): _description_
+        clf (_type_): _description_
+        params (Optional[Dict], optional): _description_. Defaults to None.
+
+    Returns:
+        _type_: _description_
+    """
+    # Extract params
+    alpha = params.get('alpha', 1.0)
+    beta = params.get('beta', 1.0)
+    rho = params.get('rho', 1.0005)  # terminating threshold
+    T = params.get('beta_iter', 10)
+
+    N = len(y_train)
+    weight_list_default = np.array(beta_weight_list(N)) / N  # normalizing
+    weight_list = np.array(beta_weight_list(N, alpha, beta)) / N
+    idxes = list(range(N))
+    hat_rho = 2 * rho
+
+    # For convergence check
+    prob_marginal_contrib = np.zeros((N, N))
+    prob_marginal_contrib_count = np.zeros((N, N))
+
+    B = 1
+    marginal_contribs = np.zeros((0, N))
+    for _ in trange(T):  # T for a forced max iter
+        np.shuffle(idxes)
+        acc = 0
+        marginal_contribs_tmp = np.zeros(N)
+        for k, j in enumerate(idxes):
+            temp_idxes = idxes[:k + 1]
+            acc_new = get_utility(x_train[temp_idxes, :], y_train[temp_idxes],
+                                  x_valid, y_valid, clf)
+
+            marginal_contribs_tmp[j] = (acc_new - acc) / weight_list_default[k]
+            prob_marginal_contrib[j, k] += acc_new - acc
+            prob_marginal_contrib_count[j, k] += 1
+            acc = acc_new
+
+        marginal_contribs = np.concatenate([marginal_contribs, marginal_contribs_tmp.reshape(1, -1)])
+        # Update the Gelman-Rubin statistic rho_hat (every 100 permutations)
+        if B % 100 == 0:
+            hat_rho = check_convergence(marginal_contribs)
+            if hat_rho < rho:
+                # terminate the outer loop earlier
+                break
+
+    # Calculate beta Shapley with marginal contribution
+    shap_value_weight = np.sum(prob_marginal_contrib * weight_list, axis=1)
+    val = shap_value_weight / np.mean(np.sum(prob_marginal_contrib_count, axis=1))
+    return val

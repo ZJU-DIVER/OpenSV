@@ -21,7 +21,27 @@ TBD $\text{\color{red}{!in progress}}$
 
 ## Overview
 
-**Shapley-based values** are prevalent data valuation approaches.
+**Shapley-based values** are prevalent data valuation approaches, which are attractive for its fair properties (axioms).
+
+The approaches are planned to support including Shapley-based values and some other famous values for data valuation.
+
+Shapley-based values:
+
+- [x] Shapley value
+- [x] Beta Shapley value
+- [ ] KNN Shapley value
+- [ ] Asymmetric Shapley value
+- [ ] Robust Shapley value
+- [ ] Cosine gradient Shapley value
+- [ ] CS-Shapley value
+- [ ] Banzhaf value
+- [ ] Volumn-based Shapley value
+
+Others:
+
+- [x] LOO
+- [ ] DVRL
+- [ ] Data-OOB
 
 ## What Can You Do via OpenSV?
 
@@ -30,11 +50,11 @@ TBD $\text{\color{red}{!in progress}}$
 
 ## Installation
 
-**Note: Please use Python 3.8+ for OpenSV**
+**Note: Please use Python 3.10+ for OpenSV**
 
 ### Using Pip
 
-Our repo is tested on Python **3.8+** and PyTorch **1.8.1+**, install OpenSV using pip as follows:
+Our repo is tested on Python **3.10+**, install OpenSV using pip as follows:
 
 
 
@@ -69,4 +89,3 @@ TBD
 ### Base Concepts
 
 TBD
-

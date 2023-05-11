@@ -1,10 +1,9 @@
 #!/bin/sh
-DIR="./CondGen"
+DIR="./phoneme"
 mkdir $DIR
 cd $DIR
 
-rm -rf webnlg_2017
-wget --content-disposition https://cloud.tsinghua.edu.cn/f/cd464aed35fc49429971/?dl=1
-tar -zxvf webnlg_2017.tar.gz
-rm -rf webnlg_2017.tar.gz
+rm -rf php8Mz7BG.arff
+wget --content-disposition https://www.openml.org/data/download/1592281/php8Mz7BG
+mv php8Mz7BG.arff phoneme.arff
 cd ..

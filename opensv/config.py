@@ -1,35 +1,29 @@
-from typing import Dict
+from dataclasses import dataclass, fields
 
 
-class Config(object):
-    def __init__(self):
-        self.params = {
-            # For TMC Shapley
-            'tmc_iter': 500,
-            'tmc_thresh': 0.001,
-            # For Beta Shapley
-            'beta_iter': 50,
-            'alpha': 1.0,
-            'beta': 16.0,
-            'rho': 1.0005,
-            'beta_chain': 10,
-        }
+@dataclass
+class ParamsTable:
+    # ====== Values ======
+    # Data Shapley
 
-    def get_params(self):
-        return self.params
-
-    def get_value(self, key: str):
-        return self.params.get(key)
-
-    def update_params(self, params: Dict):
-        for (k, v) in params.items():
-            if params.get(k) is None:
-                raise KeyError(f"[!] Undefined key {k} with value {v}")
-            else:
-                self.params[k] = v
-
-    def dump_params(self):
-        print("[+] Current parameter setting:")
-        print(f"{'key':<15} {'Value':<15}")
-        for k, v in self.params.items():
-            print(f"{k:<15} {v:<15}")
+    # Beta Shapley
+    beta_beta: float = 1.0
+    beta_alpha: float = 16.0
+    beta_rho: float = 1.0005
+    beta_chain: int = 10
+    
+    # TODO: more values
+    
+    # ====== Solutions ======
+    num_perm: int = 500
+    truncated_threshold: float = 0.001
+    
+    # TODO more solutions
+    def __repr__(self):
+        title = f"| {'Key':<25}| {'Value':<15}|\n"
+        content = ""
+        for field in fields(self):
+            content += f"| {field.name:<25}| {getattr(self, field.name):<15}|\n"
+        return ("+" + "-"*43 + "+\n" + title + 
+                "|" + "-"*43 + "|\n" + content + 
+                "+" + "-"*43 + "+")

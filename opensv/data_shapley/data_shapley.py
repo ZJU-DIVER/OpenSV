@@ -35,6 +35,9 @@ class DataShapley(Valuation):
         self.clf = clf
         self.num_perm = para_tbl.num_perm
         self.truncated_threshold = para_tbl.truncated_threshold
+        
+        # Customized parameters
+        self.kwargs = kwargs
 
 
     def check_params(self) -> None:
@@ -55,7 +58,12 @@ class DataShapley(Valuation):
                                                self.truncated_threshold)
                 case _:
                     raise ValueError("[!] No matched solver")
-
+        elif isinstance(solver, Callable[..., Array]):
+            # Customize solver
+            self.values = solver(*args, **self.kwargs)
+        else:
+            raise ValueError("[!] Illegal solver type")
+        
     def get_values(self) -> Array:
         if self.values is not None:
             return self.values

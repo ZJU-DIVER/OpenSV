@@ -1,10 +1,11 @@
 from typing import Optional, Any, Callable, Union
 
 import numpy as np
+from sklearn.linear_model import LogisticRegression as LR
 
 from ..valuation import Valuation
 from ..config import ParamsTable
-from solvers import *
+from .solvers import *
 
 Array = np.ndarray
 
@@ -25,8 +26,8 @@ class DataShapley(Valuation):
              y_train: Array,
              x_valid: Optional[Array]=None,
              y_valid: Optional[Array]=None,
-             clf: Optional[Any]=None,
-             para_tbl: Optional[ParamsTable]=None,
+             clf: Optional[Any]=LR(max_iter=100),
+             para_tbl: Optional[ParamsTable]=ParamsTable(),
              **kwargs):
         self.x_train = x_train
         self.y_train = y_train

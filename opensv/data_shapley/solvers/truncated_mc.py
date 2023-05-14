@@ -32,6 +32,6 @@ def truncated_mc(
                 break
             x_temp, y_temp = x_train[idxes[:i], :], y_train[idxes[:i]]
             new_acc = get_utility(x_temp, y_temp, x_valid, y_valid, clf)
-            val[idxes[i]] += new_acc - acc
+            val[idxes[i-1]] += new_acc - acc
             acc = new_acc
     return val / T

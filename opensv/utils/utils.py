@@ -35,8 +35,32 @@ def get_utility(x_train, y_train, x_valid, y_valid, clf):
         clf.fit(x_train, y_train)
         acc = accuracy_score(y_valid, clf.predict(x_valid))
     except ValueError:
-        # Training set only has a single calss
+        # Training set only has a single class
         acc = accuracy_score(y_valid, [y_train[0]] * len(y_valid))
+    return acc
+
+def get_utility_prob(x_train, y_train, x_valid, y_valid, clf, num_classes):
+    """_summary_
+
+    Args:
+        x_train (_type_): _description_
+        y_train (_type_): _description_
+        x_valid (_type_): _description_
+        y_valid (_type_): _description_
+        clf (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    try:
+        clf.fit(x_train, y_train)
+        prob = clf.predict_proba(x_valid)
+        hatY = clf.predict(x_valid)
+        prob = np.amax(prob, axis=1)
+        acc = np.sum(prob[y_valid == hatY]) / len(y_valid)
+    except ValueError:
+        # Training set only has a single class
+        acc = 1.0 / num_classes * accuracy_score(y_valid, [y_train[0]] * len(y_valid))
     return acc
 
 

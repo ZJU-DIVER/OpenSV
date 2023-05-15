@@ -1,6 +1,21 @@
+import time
+
 import numpy as np
 from sklearn.metrics import accuracy_score
 from typing import List
+
+
+def clock(func):
+    def clocked(*args):
+        tic = time.perf_counter()
+        result = func(*args)
+        toc = time.perf_counter()
+        elapsed = toc - tic
+        name = func.__name__ 
+        arg_str = ",".join(repr(arg) for arg in args)
+        print(f"[{elapsed:0.8f}s] {name}({arg_str})")
+        return result
+    return clocked
 
 
 def get_utility(x_train, y_train, x_valid, y_valid, clf):

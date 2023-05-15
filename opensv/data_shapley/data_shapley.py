@@ -6,6 +6,7 @@ from sklearn.linear_model import LogisticRegression as LR
 from ..valuation import Valuation
 from ..config import ParamsTable
 from .solvers import *
+from ..utils.utils import clock
 
 Array = np.ndarray
 
@@ -45,6 +46,7 @@ class DataShapley(Valuation):
         assert self.num_perm > 0
         assert self.truncated_threshold >= 0
 
+    @clock
     def solve(self, solver: Optional[Union[str, Callable[..., Array]]]="truncated_mc") -> None:
         self.check_params()
         args = [self.x_train, self.y_train, self.x_valid, self.y_valid, self.clf]

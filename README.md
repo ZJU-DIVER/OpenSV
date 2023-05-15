@@ -1,7 +1,7 @@
 
 <div align="center">
 
-<img src="./docs/artwork/header.png" width="350px">
+<img src="./docs/artwork/apparent_header.png" width="350px">
 
 **An Open-Source Framework for Shapley-based value intened intended for data valuation.**
 

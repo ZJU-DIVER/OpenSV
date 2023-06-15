@@ -12,6 +12,12 @@ class ParamsTable:
     beta_rho: float = 1.0005
     beta_chain: int = 10
     
+    #KNN Shapley
+    K: int = 16
+    eps: float = 0.1
+
+    #Volume-based Shapley
+
     # TODO: more values
     
     # ====== Solutions ======

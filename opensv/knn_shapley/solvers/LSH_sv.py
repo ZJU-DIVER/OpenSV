@@ -4,7 +4,7 @@ import numpy as np
 
 
 Array = np.ndarray
-
+# TODO: implement LSH_sv
 def LSH_sv(
         x_train: Array,
         y_train: Array,
@@ -12,4 +12,4 @@ def LSH_sv(
         y_valid: Optional[Array] = None,
         K: int =16
 ) -> Array:
-    #todo
+    return 0

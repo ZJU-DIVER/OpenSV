@@ -16,6 +16,8 @@ class ParamsTable:
     K: int = 16
     eps: float = 0.1
 
+    # CS-Shapley
+
     #Volume-based Shapley
 
     # TODO: more values

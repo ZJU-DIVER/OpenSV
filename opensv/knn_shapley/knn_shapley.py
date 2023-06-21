@@ -1,12 +1,10 @@
 from typing import Optional, Any, Callable, Union
 
 import numpy as np
-from sklearn.linear_model import LogisticRegression as LR
 
 from ..valuation import Valuation
 from ..config import ParamsTable
 from .solvers import *
-from ..utils.utils import clock
 
 Array = np.ndarray
 

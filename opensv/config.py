@@ -13,12 +13,25 @@ class ParamsTable:
     beta_chain: int = 10
     
     #KNN Shapley
+    '''
+        Args:
+            K (int) : KNN model parameter
+            eps (float) : LSH parameter
+    '''
     K: int = 16
     eps: float = 0.1
 
     # CS-Shapley
 
     #Volume-based Shapley
+    """     
+        Args:
+            omega (float):A smaller ω means that the
+            d-cubes are more refined and RV can better represent the original data instead of crudely grouping
+            many data points together and representing them via a statistic. On the other hand, a larger ω means
+            a less refined diversity representation but greater replication robustness
+    """
+    omega=0.1
 
     # TODO: more values
     

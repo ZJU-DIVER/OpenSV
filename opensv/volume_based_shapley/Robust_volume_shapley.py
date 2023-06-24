@@ -1,5 +1,5 @@
 from typing import Optional, Any, Callable, Union
-
+from ..utils.volume import *
 import numpy as np
 from ..utils.utils import clock
 from ..valuation import Valuation
@@ -8,20 +8,31 @@ from .solvers import *
 
 Array = np.ndarray
 
-class KNNShapley(Valuation):
+
+'''
+    RVShapley only needs a train dataset, and a validation dataset is unnecessary.
+    Before using RVShapley, the datasets need to be preprocessed.
+    The format of the train dataset is as follows(for example):
+        tensor([[x1,x2,x3...,x8],...,[],...,[...]])
+        It contains n_participants data subsets ( data owners ),
+        each data subsets ( data owners ) consisting of s data points, with each data point having 8 dimensions(x1,x2...x8).
+
+''' 
+
+class RVShapley(Valuation):
     def __init__(self):
         self.clf = None
         self.y_valid = None
         self.x_valid = None
         self.y_train = None
         self.x_train = None
-        self.K = None
-        self.eps = None
+        self.omega = None
         self.values = None
+        self.num_perm = None
 
     def load(self,
              x_train: Array,
-             y_train: Array,
+             y_train: Optional[Array]=None,
              x_valid: Optional[Array]=None,
              y_valid: Optional[Array]=None,
              clf: Optional[Any]=None,
@@ -31,26 +42,26 @@ class KNNShapley(Valuation):
         self.y_train = y_train
         self.x_valid = x_valid
         self.y_valid = y_valid
-        self.K = para_tbl.K
-        self.eps = para_tbl.eps
+        self.clf = clf
+        self.omega = para_tbl.omega
+        self.num_perm = para_tbl.num_perm
         
         # Customized parameters
         self.kwargs = kwargs
 
 
     def check_params(self) -> None:
-        assert self.K > 0
+        assert self.omega >= 0 and self.omega <= 1
 
     @clock
-    def solve(self, solver: Optional[Union[str, Callable[..., Array]]]="exact_sv") -> None:
+    def solve(self, solver: Optional[Union[str, Callable[..., Array]]]="monte_carlo") -> None:
         self.check_params()
-        args = [self.x_train, self.y_train, self.x_valid, self.y_valid,self.K]
+        args = [self.x_train , self.omega]
         if isinstance(solver, str):
             match solver:
-                case "exact_sv":
-                    self.values = exact_sv(*args)
-                case "LSH_sv":
-                    self.values = LSH_sv(*args)
+                case "monte_carlo":
+                    self.values = monte_carlo(*args,
+                                              self.num_perm)
                 case _:
                     raise ValueError("[!] No matched solver")
         elif isinstance(solver, Callable[..., Array]):

@@ -3,7 +3,7 @@ import time
 import numpy as np
 from sklearn.metrics import accuracy_score
 from typing import List
-
+from random import shuffle, randint, sample
 
 def clock(func):
     def clocked(*args):
@@ -39,6 +39,7 @@ def get_utility(x_train, y_train, x_valid, y_valid, clf):
         acc = accuracy_score(y_valid, [y_train[0]] * len(y_valid))
     return acc
 
+
 def get_utility_prob(x_train, y_train, x_valid, y_valid, clf, num_classes):
     """_summary_
 
@@ -63,6 +64,26 @@ def get_utility_prob(x_train, y_train, x_valid, y_valid, clf, num_classes):
         acc = 1.0 / num_classes * accuracy_score(y_valid, [y_train[0]] * len(y_valid))
     return acc
 
+def get_utility_classwise(x_train, y_train, x_valid, y_valid, label, clf):
+    devX_label = x_valid[y_valid == label]
+    devY_label = y_valid[y_valid == label]
+    devX_nonlabel = x_valid[y_valid != label]
+    devY_nonlabel = y_valid[y_valid != label]
+    # Always more than 1 class in the training set
+    clf.fit(x_train, y_train)
+    val_i = accuracy_score(devY_label, clf.predict(devX_label), normalize=False) / len(y_valid)
+    val_i_non = accuracy_score(devY_nonlabel, clf.predict(devX_nonlabel), normalize=False) / len(y_valid)
+    return np.exp(val_i_non) * val_i
+
+
+def class_conditional_sampling(Y, label_set):
+    Idx_nonlabel = []
+    for label in label_set:
+        label_indices = list(np.where(Y == label)[0])
+        s = randint(1, len(label_indices))
+        Idx_nonlabel += sample(label_indices, s)
+    shuffle(Idx_nonlabel) # shuffle the sampled indices
+    return Idx_nonlabel
 
 def beta_weight(j: int, n: int, alpha: float = 1.0, beta: float = 1.0) -> float:
     """gen weight for beta shapley

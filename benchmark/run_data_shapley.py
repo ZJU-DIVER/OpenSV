@@ -1,15 +1,12 @@
-
 import sys
 sys.path.append('..')
-from opensv import DataShapley
-import numpy as np
-from typing import Tuple
-from sklearn.model_selection import train_test_split
-
-from sacred import Experiment
 from sacred.observers import MongoObserver
-
-
+from sacred import Experiment
+from sacred.utils import apply_backspaces_and_linefeeds
+from sklearn.model_selection import train_test_split
+from typing import Tuple
+import numpy as np
+from opensv import DataShapley
 
 DATABASE_NAME = 'SV_Bench'
 YOUR_CPU = None
@@ -17,6 +14,7 @@ YOUR_CPU = None
 EXPERIMENT_NAME = 'my_experiment_data-shapley'
 ex = Experiment(EXPERIMENT_NAME)
 ex.observers.append(MongoObserver.create(url=YOUR_CPU, db_name=DATABASE_NAME))
+ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 
 @ex.config
@@ -53,11 +51,12 @@ def cal_sv(train_data: Tuple,
         np.random.seed(local_seed)
         dv.solve(solver)
         ex.log_scalar(
-            f'solver{solver}_perm{num_perms}_{i+1}/{repeat_time}', str(dv.get_values()))
+            f'solver_{solver}_perm_{num_perms}_{i+1}/{repeat_time}', str(dv.get_values()))
 
 
 @ex.automain
 def main(train_size, valid_size, seed, num_perms, _run):
+    # step 1: data loader
     feature = np.random.rand(1000, 2)  # X
     label = np.random.choice([0, 1], 1000)  # y
 

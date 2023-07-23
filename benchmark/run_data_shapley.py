@@ -6,6 +6,7 @@ from sacred.utils import apply_backspaces_and_linefeeds
 from sklearn.model_selection import train_test_split
 from typing import Tuple
 import numpy as np
+import json
 from opensv import DataShapley
 
 DATABASE_NAME = 'SV_Bench'
@@ -42,7 +43,6 @@ def cal_sv(train_data: Tuple,
            num_procs: int,  # not used
            _run):
 
-    # Step 2: use seed to split then get train and test data
     dv = DataShapley()
     dv.load(train_data[0], train_data[1], valid_data[0], valid_data[1])
     # Step 3: repeat with different seeds and record Shapley values
@@ -51,7 +51,13 @@ def cal_sv(train_data: Tuple,
         np.random.seed(local_seed)
         dv.solve(solver)
         ex.log_scalar(
-            f'solver_{solver}_perm_{num_perms}_{i+1}/{repeat_time}', str(dv.get_values()))
+            f'solver_{solver}_perm_{num_perms}_{i+1}/{repeat_time}',
+            json.dumps(list(dv.get_values()))
+        )
+        ex.log_scalar(
+            f'solver_{solver}_perm_{num_perms}_{i+1}/{repeat_time}_h',
+            str(dv.get_values())
+        )
 
 
 @ex.automain
@@ -60,6 +66,7 @@ def main(train_size, valid_size, seed, num_perms, _run):
     feature = np.random.rand(1000, 2)  # X
     label = np.random.choice([0, 1], 1000)  # y
 
+    # Step 2: use seed to split then get train and test data
     _, X, _, y = train_test_split(
         feature, label, test_size=train_size + valid_size, random_state=seed)
     train_data = (X[:train_size], y[:train_size])

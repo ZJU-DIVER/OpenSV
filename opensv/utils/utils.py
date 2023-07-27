@@ -1,5 +1,5 @@
 import time
-
+import json
 import numpy as np
 from sklearn.metrics import accuracy_score
 from typing import List
@@ -164,3 +164,9 @@ def check_convergence(mem, n_chains: int = 10):
     GR_stat = np.max(GR_list)
     print(f'Total number of random sets: {len(mem)}, GR_stat: {GR_stat}', flush=True)
     return GR_stat
+
+class Float32Encoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.float32):
+            return float(obj)
+        return super().default(obj)

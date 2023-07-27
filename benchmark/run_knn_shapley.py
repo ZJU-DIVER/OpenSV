@@ -9,11 +9,11 @@ import json
 from opensv import KNNShapley 
 from opensv.config import ParamsTable 
 from dataloader.preparedata_knn import *
-
+from opensv.utils.utils import Float32Encoder
 Array = np.ndarray
 
 DATABASE_NAME = 'SV_Bench'
-YOUR_CPU = None
+YOUR_CPU = "localhost:27017"
 
 EXPERIMENT_NAME = 'my_experiment_knn-shapley'
 ex = Experiment(EXPERIMENT_NAME)
@@ -42,16 +42,15 @@ def cal_sv(x_train: Array,
            k: int,
            solver: str,
            seed: int,
-           repeat_time: int,
            num_procs: int,  # not used
-           _run):
+           ):
 
     dv = KNNShapley()
     dv.load(x_train, y_train, x_val, y_val , ParamsTable(K=k))
     dv.solve(solver)
     ex.log_scalar(
         f'solver_{solver}_k-neighbors_{k}_',
-        json.dumps(list(dv.get_values()))
+        json.dumps(list(dv.get_values()),cls=Float32Encoder)
     )
     ex.log_scalar(
         f'solver_{solver}_k-neighbors_{k}_',
@@ -60,7 +59,7 @@ def cal_sv(x_train: Array,
 
 
 @ex.automain
-def main(train_size, valid_size, seed, num_perms, _run):
+def main(train_size, valid_size, seed,dataset_name):
     # step 1: data loader
     x_train, y_train, x_val, y_val =get_processed_data( dataset_name ,train_size,valid_size,seed)
 

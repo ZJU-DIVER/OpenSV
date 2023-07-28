@@ -13,6 +13,7 @@ def clock(func):
         elapsed = toc - tic
         name = func.__name__ 
         arg_str = ",".join(repr(arg) for arg in args)
+        arg_str += ",".join(repr(k) + ': ' + repr(v) for k, v in kwargs.items())
         print(f"[{elapsed:0.8f}s] {name}({arg_str})")
         return result
     return clocked

@@ -6,9 +6,9 @@ from typing import List
 from random import shuffle, randint, sample
 
 def clock(func):
-    def clocked(*args):
+    def clocked(*args, **kwargs):
         tic = time.perf_counter()
-        result = func(*args)
+        result = func(*args, **kwargs)
         toc = time.perf_counter()
         elapsed = toc - tic
         name = func.__name__ 

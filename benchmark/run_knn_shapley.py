@@ -8,7 +8,7 @@ import numpy as np
 import json
 from opensv import KNNShapley 
 from opensv.config import ParamsTable 
-from dataloader.preparedata_knn import *
+from dataloader.preparedata_openml import *
 from opensv.utils.utils import Float32Encoder
 Array = np.ndarray
 
@@ -24,6 +24,7 @@ ex.captured_out_filter = apply_backspaces_and_linefeeds
 @ex.config
 def dataset_config():
     dataset_name = '2dplanes'
+    dataset_id = 727
     train_size = 1000
     valid_size = 100
     seed = 42
@@ -59,9 +60,9 @@ def cal_sv(x_train: Array,
 
 
 @ex.automain
-def main(train_size, valid_size, seed,dataset_name):
+def main(train_size, valid_size, seed, dataset_name, dataset_id):
     # step 1: data loader
-    x_train, y_train, x_val, y_val =get_processed_data( dataset_name ,train_size,valid_size,seed)
+    x_train, y_train, x_val, y_val =get_processed_data(dataset_name, dataset_id, valid_size, seed)
 
     
     for k in [1 , 10, 16]:

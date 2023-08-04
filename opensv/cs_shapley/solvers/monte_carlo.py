@@ -20,7 +20,7 @@ def monte_carlo(
     val = np.zeros(N)
     idxes = list(range(N))
     labels = list(set(y_train))
-    for label in trange(labels):
+    for label in trange(len(labels)):
         # Select data based on the class label
         orig_indices = np.array(list(range(x_train.shape[0])))[y_train == label]
         x_train_label = x_train[y_train == label]

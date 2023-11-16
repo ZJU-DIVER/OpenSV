@@ -31,11 +31,11 @@ Shapley-based values:
 
 - [x] Shapley value
 - [x] Beta Shapley value
-- [ ] KNN Shapley value
+- [x] KNN Shapley value
 - [ ] Asymmetric Shapley value
 - [ ] Robust Shapley value
 - [ ] Cosine gradient Shapley value
-- [ ] CS-Shapley value
+- [x] CS-Shapley value
 - [ ] Banzhaf value
 - [ ] Volumn-based Shapley value
 

@@ -1,0 +1,2 @@
+class FeatureAttribution(BaseGame):
+    pass

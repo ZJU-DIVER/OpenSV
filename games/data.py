@@ -1,8 +1,18 @@
-''' Data Cooperative Game '''
+"""
+opensv.games.data
+~~~~~~~~~~~~~~~~~
 
-from .game import Game 
+This module provides various games for data valuation tasks.
+"""
+from typing import Any
 
-class DataGame(Game):
+from .base import BaseGame
+
+
+class DataValuation(BaseGame):
+    def __repr__(self) -> None:
+        pass
+
     def __init__(self, train_data, valid_data, model):
         self.train_data = train_data
         self.valid_data = valid_data
@@ -28,3 +38,20 @@ class DataGame(Game):
             valid_data,
             model
         )
+
+
+class GroupDataValuation(BaseGame):
+    def __repr__(self) -> None:
+        pass
+
+    def get_utility(self, coalition) -> Any:
+        pass
+
+    @property
+    def size(self) -> int:
+        pass
+
+
+
+
+

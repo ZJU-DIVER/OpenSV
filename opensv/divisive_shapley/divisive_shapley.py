@@ -26,12 +26,14 @@ class DivisiveShapley:
 
     def divisive_shap_approx(self, S: np.ndarray, v: Callable[[np.ndarray], float]) -> np.ndarray:
         n = len(S)
-        if n <= np.log(n) / np.log(self.beta):
+        if n <= np.log(n) / np.log(self.beta) or n == 1:
             return shapley_value_exact(S, v)
         else:
             kmeans = KMeans(n_clusters=2, random_state=0).fit(S.reshape(-1, 1))
             labels = kmeans.labels_
             unique_labels = np.unique(labels)
+            if unique_labels.shape[0] == 1:
+                return shapley_value_exact(S[labels == unique_labels[0]], v)
             shap_values = np.zeros(n)
 
             for label in unique_labels:
@@ -45,8 +47,9 @@ class DivisiveShapley:
         return self.divisive_shap_approx(N, v)
 
 
-# Usage Example
-N = np.random.rand(100)  # Example data
-div_shap = DivisiveShapley(beta=2)
-shapley_values = div_shap.calculate(N, characteristic_function)
-print(shapley_values)
+if __name__ == "__main__":
+    # Usage Example
+    N = np.random.rand(100)  # Example data
+    div_shap = DivisiveShapley(beta=2)
+    shapley_values = div_shap.calculate(N, characteristic_function)
+    print(shapley_values)

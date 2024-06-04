@@ -1,3 +1,0 @@
-''' Traditional Cooperative Game '''
-
-# TBD

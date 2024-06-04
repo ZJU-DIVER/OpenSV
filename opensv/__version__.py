@@ -1,8 +1,0 @@
-__title__ = "OpenSV"
-__description__ = "An Open-Source Framework for Shapley-based value intened intended for data valuation."
-__version__ = "0.0.1"
-__license__ = "Apache 2.0"
-__author__ = "Haocheng Xia, Qiheng Sun, Xiang Li, Yuanzhi Xiao, Hongwei Zhang"
-__author_email__ = "xiahc@zju.edu.cn"
-__copyright__ = "Copyright 2023 - present"
-__url__ = "https://github.com/ZJU-DIVER/OpenSV"

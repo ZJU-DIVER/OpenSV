@@ -1,6 +1,0 @@
-numpy==1.24.3
-scikit_learn==1.2.2
-setuptools==66.0.0
-torch==2.0.1
-tqdm==4.65.0
-botorch==0.8.5

@@ -61,7 +61,7 @@ class AmortizedValuationRaw(Valuation):
     def check_params(self) -> None:
         return
 
-    def solve(self) -> None:
+    def solve(self, model_save_path: str = None) -> None:
 
         self.check_params()
 
@@ -124,6 +124,8 @@ class AmortizedValuationRaw(Valuation):
 
         # Classifier pretraining
 
+        print("Classifier pretraining")
+
         batch_size = 32
         exper_med = get_experiment_mediator()
         data_evaluator = DataShapley(
@@ -174,6 +176,8 @@ class AmortizedValuationRaw(Valuation):
 
         # Valuation model training
 
+        print("Valuation model training")
+
         lr = 5e-4
         min_lr = 5e-6
         train_contributions = 10
@@ -184,7 +188,6 @@ class AmortizedValuationRaw(Valuation):
         results = [
             np.load(filename, allow_pickle=True).item() for filename in filenames
         ]
-        print(results)
         train_results = aggregate_estimator_results(results[:train_contributions])
         val_results = aggregate_estimator_results(results[-val_contributions:])
 
@@ -214,6 +217,7 @@ class AmortizedValuationRaw(Valuation):
         best_checkpoint = None
 
         for epochs in [10, 20, 30, 40, 50]:
+            print(f"Epoch {epochs}")
             classifier_copy = deepcopy(classifier)
             nn.init.zeros_(classifier_copy[-1].weight)
             nn.init.zeros_(classifier_copy[-1].bias)
@@ -227,7 +231,7 @@ class AmortizedValuationRaw(Valuation):
             best_callback = ModelCheckpoint(
                 save_top_k=1,
                 monitor="val_loss",
-                filename="{epoch}-{val_loss:.8f}",
+                filename="{epoch}-best",
                 verbose=True,
             )
             epoch_callback = ModelCheckpoint(every_n_epochs=1, filename="{epoch}")
@@ -255,6 +259,9 @@ class AmortizedValuationRaw(Valuation):
 
         checkpoint = ValuationModel.load_from_checkpoint(best_checkpoint)
         self.values = checkpoint.estimates.numpy()
+        
+        if model_save_path is not None:
+            torch.save(checkpoint, os.path.join(model_save_path, "best_checkpoint.pt"))
 
         rmtree(temp_path, ignore_errors=True)
 

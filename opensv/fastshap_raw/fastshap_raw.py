@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import lightgbm as lgb
+import os
 from sklearn.linear_model import LogisticRegression as LR
 from sklearn.preprocessing import StandardScaler
 
@@ -55,7 +56,7 @@ class FastShapRaw(Valuation):
     def check_params(self) -> None:
         return
 
-    def solve(self) -> None:
+    def solve(self, model_save_path: str = None) -> None:
         self.check_params()
 
         ss = StandardScaler()
@@ -138,6 +139,10 @@ class FastShapRaw(Valuation):
         self.values = [
             np.sum(val[i][:, int(self.y_train[i])]) for i in range(len(self.x_train))
         ]
+
+        if model_save_path is not None:
+            torch.save(fastshap.explainer, os.path.join(model_save_path, "explainer.pt"))
+            torch.save(fastshap.imputer, os.path.join(model_save_path, "imputer.pt"))
 
     def get_values(self) -> Array:
         if self.values is not None:

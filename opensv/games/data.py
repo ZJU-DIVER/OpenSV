@@ -1,5 +1,5 @@
 ''' Data Cooperative Game '''
-from copy import deepcopy
+from copy import deepcopy,copy
 from typing import Dict, Self
 
 import sklearn.datasets as datasets
@@ -57,18 +57,26 @@ class DataGame(BaseGame):
             'X': self.players['X'][coalition],
             'y': self.players['y'][coalition],
         }
+        if len(np.unique(temp_players['y'])) == 1:
+            return 1.0
         model = self.model
         model.fit(**temp_players)
         if self.task == 'classification':
-            return accuracy_score(model.predict(self.test_set['X']), model.predict(self.test_set['y']))
+            return accuracy_score(model.predict(self.test_set['X']), self.test_set['y'])
         else:
             raise ValueError(f'Unknown task: {self.task}')
 
     def copy(self) -> Self:
-        return self.copy()
+        return copy(self)
 
     def __copy__(self) -> Self:
         return deepcopy(self)
 
     def __repr__(self):
         return f'DataGame(task={self.task}, size={self.size})'
+    
+    def sv(self, sv):
+        pass
+
+    def utility_func(self, model):
+        pass

@@ -51,7 +51,7 @@ class DivisiveShapley:
 
     def divisive_shap_approx(self, game: BaseGame) -> np.ndarray:
         n = game.size
-        if n <= np.log(n) / np.log(self.beta):
+        if n <= np.log(n) / np.log(self.beta) or n == 1:
             return shapley_value_exact(game)
         else:
             if isinstance(game, DataGame):
@@ -63,13 +63,14 @@ class DivisiveShapley:
                 shap_values = np.zeros_like(game.players["y"])
 
                 for label in unique_labels:
-                    index = np.where(labels[labels == label])
+                    index = (labels == label)
                     sub_coalition = {
                         "X": game.players["X"][index],
                         "y": game.players["y"][index],
                     }
-                    sub_game = game.copy()
+                    sub_game = game.__copy__()
                     sub_game.players = sub_coalition
+                    sub_game._size = len(sub_game.players['y'])
                     shap_values[labels == label] = self.divisive_shap_approx(sub_game)
                 # after we set shapley value, do normalization
                 u = game.get_utility(np.arange(game.size))

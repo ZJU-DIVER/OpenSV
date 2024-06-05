@@ -26,20 +26,21 @@ class BaseGame(ABC):
     def sv(self, sv):
         raise NotImplemented
 
-    @property
-    def players(self):
-        """
-        n players for a game, each player can be
-            - a data tuple / a group of data tuples / an ML model / a prompt for valuation
-            - a plane / a voter / a shoe for traditional game
-            - a feature / a feature value in a data tuple for feature attribution
-        """
-        return NotImplemented
+    # conflict with current complementation of DataGame
+    # @property
+    # def players(self):
+    #     """
+    #     n players for a game, each player can be
+    #         - a data tuple / a group of data tuples / an ML model / a prompt for valuation
+    #         - a plane / a voter / a shoe for traditional game
+    #         - a feature / a feature value in a data tuple for feature attribution
+    #     """
+    #     return NotImplemented
 
-    @players.setter
-    @abstractmethod
-    def players(self, players):
-        pass
+    # @players.setter
+    # # @abstractmethod
+    # def players(self, players):
+    #     pass
 
     @property
     def utility_func(self):

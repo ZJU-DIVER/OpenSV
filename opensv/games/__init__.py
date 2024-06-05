@@ -1,4 +1,4 @@
-from base import BaseGame
+from .base import BaseGame
 # Data valuation game
-from data import DataGame
+from .data import DataGame
 

@@ -1,14 +1,20 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
+from typing import Any
 
 
-class BaseGame(ABCMeta):
+class BaseGame(ABC):
+    @classmethod
+    @abstractmethod
+    def create(cls, *args, **kwargs):
+        raise NotImplementedError
+
     @property
     def type(self):
         return NotImplemented
 
     @property
     @abstractmethod
-    def size(self):
+    def size(self) -> int:
         raise NotImplemented
 
     @property
@@ -49,6 +55,14 @@ class BaseGame(ABCMeta):
     
     @abstractmethod
     def get_utility(self, coalition):
+        raise NotImplemented
+
+    @abstractmethod
+    def copy(self):
+        raise NotImplemented
+
+    @abstractmethod
+    def __copy__(self):
         raise NotImplemented
 
     @abstractmethod

@@ -70,8 +70,8 @@ def onehot_to_location(y: np.array) -> np.array:
 
 @ex.automain
 def main(train_size, valid_size, seed, datasets, repeat_time):
-    t = 0.0
     for dataset_name in datasets:
+        t = 0.0
         for i in range(repeat_time):
             fetcher = DataFetcher(dataset_name=dataset_name).split_dataset_by_count(
                 train_size, valid_size

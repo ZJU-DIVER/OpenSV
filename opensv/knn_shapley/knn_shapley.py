@@ -44,7 +44,7 @@ class KNNShapley(Valuation):
     @clock
     def solve(self, solver: Optional[Union[str, Callable[..., Array]]]="exact_sv") -> None:
         self.check_params()
-        args = [self.x_train, self.y_train, self.x_valid, self.y_valid,self.K]
+        args = [self.x_train, self.y_train, self.x_valid, self.y_valid, self.K]
         if isinstance(solver, str):
             match solver:
                 case "exact_sv":

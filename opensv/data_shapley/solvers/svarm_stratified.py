@@ -1,0 +1,124 @@
+from typing import Optional, Any
+
+import numpy as np
+from tqdm import trange
+
+from opensv.utils.utils import get_utility
+
+Array = np.ndarray
+
+
+def reverse(a: Array, n: int) -> Array:
+    a_have = set(a)
+    na = []
+    for i in range(n):
+        if i not in a_have:
+            na.append(i)
+    na = np.asarray(na)
+    return na
+
+
+def svarm_stratified(
+        x_train: Array,
+        y_train: Array,
+        x_valid: Optional[Array] = None,
+        y_valid: Optional[Array] = None,
+        clf: Optional[Any] = None,
+        num_perm: int=500,
+) -> Array:
+    N = len(y_train)
+    T = num_perm - N * 2 - 1
+    for s in range(2, N - 1):
+        T -= 2 * ((N + s - 1) // s)
+        
+    shp = np.zeros((N, N))
+    shm = np.zeros((N, N))
+    cp = np.zeros((N, N))
+    cm = np.zeros((N, N))
+
+    dis = np.zeros(N + 1)
+    if N % 2 == 0:
+        nlogn = N * np.log(N)
+        harmonic = np.sum([1 / i for i in range(1, N // 2)])
+        frac = (nlogn - 1) / (2 * nlogn * (harmonic - 1))
+        for i in range(2, N // 2):
+            dis[i] = frac / i
+            dis[N - i] = frac / i
+        dis[N // 2] = 1 / nlogn
+    else:
+        harmonic = np.sum([1 / i for i in range(1, N // 2 + 1)])
+        frac = 1 / (2 * (harmonic - 1))
+        for i in range(2, N // 2 + 1):
+            dis[i] = frac / i
+            dis[N - i] = frac / i
+    
+    probs = [dis[i] for i in range(N + 1)]
+    probs = np.asarray(probs)
+
+    def update(a: Array) -> None:
+        v = get_utility(x_train[a, :], y_train[a], x_valid, y_valid, clf)
+        sz = len(a)
+        na = reverse(a, N)
+        if sz > 0:
+            shp[sz - 1][a] = (shp[sz - 1][a] * cp[sz - 1][a] + v) / (cp[sz - 1][a] + 1)
+            cp[sz - 1][a] += 1
+        if sz < N:
+            shm[sz][na] = (shm[sz][na] * cm[sz][na] + v) / (cm[sz][na] + 1)
+            cm[sz][na] += 1
+    
+    idxes = list(range(N))
+    idxes = np.asarray(idxes)
+    update(idxes)
+    for i in range(N):
+        idxes[i], idxes[N - 1] = idxes[N - 1], idxes[i]
+        update(idxes[:N - 1])
+        idxes[i], idxes[N - 1] = idxes[N - 1], idxes[i]
+        update(idxes[0:1])
+
+    for sz in trange(2, N - 1):
+        np.random.shuffle(idxes)
+        for i in range(0, N // sz):
+            A = np.asarray([idxes[i * sz - 1 + j] for j in range(1, sz + 1)])
+            v = get_utility(x_train[A, :], y_train[A], x_valid, y_valid, clf)
+            for j in A:
+                shp[sz - 1][j] = v
+                cp[sz - 1][j] = 1
+
+        if N % sz != 0:
+            A = np.asarray([idxes[i - 1] for i in range(N - (N % sz) + 1, N + 1)])
+            nA = reverse(A, N)
+            B = np.asarray(np.random.choice(nA, sz - (N % sz), replace=False))
+            AB = np.concatenate([A, B], axis=0)
+            v = get_utility(x_train[AB, :], y_train[AB], x_valid, y_valid, clf)
+            for i in A:
+                shp[sz - 1][i] = v
+                cp[sz - 1][i] = 1
+    
+    for sz in trange(2, N - 1):
+        np.random.shuffle(idxes)
+        for i in range(0, N // sz):
+            A = np.asarray([idxes[i * sz - 1 + j] for j in range(1, sz + 1)])
+            nA = reverse(A, N)
+            v = get_utility(x_train[nA, :], y_train[nA], x_valid, y_valid, clf)
+            for j in nA:
+                shm[N - sz][j] = v
+                cm[N - sz][j] = 1
+        
+        if N % sz != 0:
+            A = np.asarray([idxes[i - 1] for i in range(N - (N % sz) + 1, N + 1)])
+            nA = reverse(A, N)
+            B = np.asarray(np.random.choice(nA, sz - (N % sz), replace=False))
+            AB = np.concatenate([A, B], axis=0)
+            nAB = reverse(AB, N)
+            v = get_utility(x_train[nAB, :], y_train[nAB], x_valid, y_valid, clf)
+            for i in A:
+                shm[N - sz][i] = v
+                cm[N - sz][i] = 1
+
+    for _ in trange(T):
+        sz = np.random.choice(N + 1, 1)
+        A = np.random.choice(range(N), sz, replace=False)
+        update(A)
+    
+    val = np.sum((shp - shm) / N, axis=0)
+    return val

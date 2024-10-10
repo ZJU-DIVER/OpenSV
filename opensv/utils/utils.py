@@ -37,7 +37,10 @@ def get_utility(x_train, y_train, x_valid, y_valid, clf):
         acc = accuracy_score(y_valid, clf.predict(x_valid))
     except ValueError:
         # Training set only has a single class
-        acc = accuracy_score(y_valid, [y_train[0]] * len(y_valid))
+        if len(y_train) > 0:
+            acc = accuracy_score(y_valid, [y_train[0]] * len(y_valid))
+        else:
+            acc = accuracy_score(y_valid, [0] * len(y_valid))
     return acc
 
 
@@ -171,3 +174,23 @@ class Float32Encoder(json.JSONEncoder):
         if isinstance(obj, np.float32):
             return float(obj)
         return super().default(obj)
+
+def split_permutation_num(m, num) -> np.ndarray:
+    """Split a number into num numbers
+
+    e.g. split_permutations(9, 2) -> [4, 5]
+         split_permutations(9, 3) -> [3, 3, 3]
+
+    :param m: the original num
+    :param num: split into num numbers
+    :return: np.ndarray
+    """
+
+    assert m > 0
+    quotient = int(m / num)
+    remainder = m % num
+    if remainder > 0:
+        perm_arr = [quotient] * (num - remainder) + [quotient + 1] * remainder
+    else:
+        perm_arr = [quotient] * num
+    return np.asarray(perm_arr)

@@ -26,9 +26,8 @@ def exact_sv(
     y_sorted = y_train[indices]
 
     score = torch.zeros_like(dist)
-
     score[indices[N-1], range(M)] = (y_sorted[N-1] == y_valid).float() / N
     for i in range(N-2, -1, -1):
         score[indices[i], range(M)] = score[indices[i+1], range(M)] + \
-                                    1/K * ((y_sorted[i] == y_valid).float() - (y_sorted[i+1] == y_valid).float()) * min(K, i+1) / (i+1)
+                                    1.00 / K * ((y_sorted[i] == y_valid).float() - (y_sorted[i+1] == y_valid).float()) * min(K, i+1) / (i+1)
     return score.mean(axis=1).numpy()

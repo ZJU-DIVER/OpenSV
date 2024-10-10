@@ -18,6 +18,7 @@ class DataShapley(Valuation):
         self.y_train = None
         self.x_train = None
         self.num_perm = None
+        self.num_q_split = None
         self.truncated_threshold = None
 
         self.values = None
@@ -35,7 +36,9 @@ class DataShapley(Valuation):
         self.x_valid = x_valid
         self.y_valid = y_valid
         self.clf = clf
+        self.num_proc = para_tbl.num_proc
         self.num_perm = para_tbl.num_perm
+        self.num_q_split = para_tbl.num_q_split
         self.truncated_threshold = para_tbl.truncated_threshold
         
         # Customized parameters
@@ -55,10 +58,59 @@ class DataShapley(Valuation):
                 case "monte_carlo":
                     self.values = monte_carlo(*args,
                                               self.num_perm)
+                case "monte_carlo_mp":
+                    self.values = monte_carlo_mp(*args,
+                                              self.num_perm, self.num_proc)
                 case "truncated_mc":
                     self.values = truncated_mc(*args,
                                                self.num_perm,
                                                self.truncated_threshold)
+                case "truncated_mc_mp":
+                    self.values = truncated_mc_mp(*args,
+                                               self.num_perm,
+                                               self.truncated_threshold, self.num_proc)
+                case "monte_carlo_antithetic":
+                    self.values = monte_carlo_antithetic(*args,
+                                              self.num_perm)
+                case "monte_carlo_antithetic_mp":
+                    self.values = monte_carlo_antithetic_mp(*args,
+                                              self.num_perm, self.truncated_threshold,self.num_proc)
+                case "owen":
+                    self.values = owen(*args, self.num_perm, self.num_q_split)
+                case "owen_mp":
+                    self.values = owen_mp(*args, self.num_perm, self.num_q_split, self.num_proc)
+                case "owen_halved":
+                    self.values = owen_halved(*args, self.num_perm, self.num_q_split)
+                case "owen_halved_mp":
+                    self.values = owen_halved_mp(*args, self.num_perm, self.num_q_split, self.num_proc)
+                case "stratified":
+                    self.values = stratified(*args, self.num_perm)
+                case "stratified_mp":
+                    self.values = stratified_mp(*args, self.num_perm, self.num_proc)
+                case "complementary":
+                    self.values = complementary(*args, self.num_perm)
+                case "complementary_mp":
+                    self.values = complementary_mp(*args, self.num_perm, self.num_proc)
+                case "svarm":
+                    self.values = svarm(*args, self.num_perm)
+                case "svarm_mp":
+                    self.values = svarm_mp(*args, self.num_perm, self.num_proc)
+                case "svarm_stratified":
+                    self.values = svarm_stratified(*args, self.num_perm)
+                case "svarm_stratified_mp":
+                    self.values = svarm_stratified_mp(*args, self.num_perm, self.num_proc)
+                case "kernel_shap":
+                    self.values = kernel_shap(*args,
+                                              self.num_perm)
+                case "kernel_shap_mp":
+                    self.values = kernel_shap_mp(*args,
+                                              self.num_perm, self.num_proc)
+                case "improved_kernel_shap":
+                    self.values = improved_kernel_shap(*args,
+                                              self.num_perm)
+                case "improved_kernel_shap_mp":
+                    self.values = improved_kernel_shap_mp(*args,
+                                              self.num_perm, self.num_proc)
                 case _:
                     raise ValueError("[!] No matched solver")
         elif isinstance(solver, Callable[..., Array]):

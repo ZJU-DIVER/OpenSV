@@ -29,7 +29,7 @@ def improved_kernel_shap(
     final_acc = get_utility(x_train, y_train, x_valid, y_valid, clf)
     init_acc = get_utility([], [], x_valid, y_valid, clf )
 
-    for _ in range(num_perm/2):
+    for _ in range(num_perm//2):
         np.random.shuffle(idxes)
         i = np.random.choice(a=range(1, N), p=np.array(weight_list) / np.sum(weight_list))
         x_temp, y_temp = x_train[idxes[:i], :], y_train[idxes[:i]]

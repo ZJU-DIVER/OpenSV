@@ -11,7 +11,9 @@ class ParamsTable:
                  K  = 16,
                  eps = 0.1,
                  omega = 0.1,
+                 num_proc = 1,
                  num_perm = 500,
+                 num_q_split = 100,
                  truncated_threshold = 0.001):
         self.beta_beta = beta_beta
         self.beta_alpha = beta_alpha
@@ -20,7 +22,9 @@ class ParamsTable:
         self.K  = K
         self.eps = eps
         self.omega = omega
+        self.num_proc = num_proc
         self.num_perm = num_perm
+        self.num_q_split = num_q_split
         self.truncated_threshold = truncated_threshold
 
     '''   

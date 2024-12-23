@@ -13,7 +13,10 @@ class ParamsTable:
                  omega = 0.1,
                  num_proc = 1,
                  num_perm = 500,
+                 num_utility = 500,
+                 num_measure = 500,
                  num_q_split = 100,
+                 lambda_param = 0,
                  truncated_threshold = 0.001):
         self.beta_beta = beta_beta
         self.beta_alpha = beta_alpha
@@ -24,7 +27,10 @@ class ParamsTable:
         self.omega = omega
         self.num_proc = num_proc
         self.num_perm = num_perm
+        self.num_utility = num_utility
+        self.num_measure = num_measure
         self.num_q_split = num_q_split
+        self.lambda_param = lambda_param
         self.truncated_threshold = truncated_threshold
 
     '''   

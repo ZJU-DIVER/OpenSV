@@ -186,7 +186,8 @@ def split_permutation_num(m, num) -> np.ndarray:
     :return: np.ndarray
     """
 
-    assert m > 0
+    if m < 0:
+        m = 0
     quotient = int(m / num)
     remainder = m % num
     if remainder > 0:

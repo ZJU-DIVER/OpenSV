@@ -18,7 +18,6 @@ def monte_carlo(
     T = num_perm
     N = len(y_train)
     val = np.zeros(N)
-    idxes = list(range(N))
     labels = list(set(y_train))
     for label in trange(len(labels)):
         # Select data based on the class label
@@ -29,7 +28,6 @@ def monte_carlo(
         y_train_nonlabel = y_train[y_train != label]
         nonlabel_set = list(set(y_train_nonlabel))
         for _ in trange(num_perm):
-            np.random.shuffle(idxes)
             # Sample a subset of training data from other labels for each i
             if len(nonlabel_set) == 1:
                 s = randint(1, x_train_nonlabel.shape[0])
@@ -45,13 +43,18 @@ def monte_carlo(
             final_acc = get_utility_classwise(x_temp, y_temp, x_valid, y_valid, label, clf)\
 
             acc = 0  # init value
+            idxes = list(range(N))
+            np.random.shuffle(idxes)
             for i in range(1, N + 1):
-                if abs(final_acc - acc):
+                if final_acc == acc:
                     break
-                x_temp = np.concatenate((trnX_nonlabel_i, x_train_label[idxes[:i], :]))
-                y_temp = np.concatenate((trnY_nonlabel_i, y_train_label[idxes[:i]]))
-                new_acc = get_utility_classwise(x_temp, y_temp, x_valid, y_valid, label, clf)
-                if idxes[i - 1] in orig_indices:
-                    val[idxes[i - 1]] += new_acc - acc
-                acc = new_acc
+                try:
+                    x_temp = np.concatenate((trnX_nonlabel_i, x_train[idxes[:i], :]))
+                    y_temp = np.concatenate((trnY_nonlabel_i, y_train[idxes[:i]]))
+                    new_acc = get_utility_classwise(x_temp, y_temp, x_valid, y_valid, label, clf)
+                    if idxes[i - 1] in orig_indices:
+                        val[idxes[i - 1]] += new_acc - acc
+                    acc = new_acc
+                except:
+                    pass
     return val / T

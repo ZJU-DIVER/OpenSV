@@ -2,34 +2,34 @@ from typing import Optional, Any
 
 import numpy as np
 from tqdm import trange
+from functools import partial
+from multiprocessing import Pool
 
 from scipy.optimize import minimize
-from opensv.utils.utils import get_utility
+from opensv.utils.utils import get_utility, split_permutation_num
 
 Array = np.ndarray
 
-def compressive(
+def subtask(
         x_train: Array,
         y_train: Array,
         x_valid: Optional[Array] = None,
         y_valid: Optional[Array] = None,
         clf: Optional[Any] = None,
-        num_perm: int=500,
-        num_measure: int=500,
-        truncated_threshold: float=0.0001
-) -> Array:
-    T = num_perm
+        A: Array=None,
+        M: int=None,
+        sub_length: int=None
+) -> tuple[Array, Array]:
+    rng = np.random.default_rng()
     N = len(y_train)
-    M = num_measure
+    idxes = list(range(N))
 
-    A = np.random.randint(2, size=(M, N)).astype(float)
-    A = (2 * A - 1) / np.sqrt(M)
     idxes = np.asarray(list(range(N)))
-    phi = np.zeros(T * N).reshape((T, N))
-    y = np.zeros(M * T).reshape((M, T))
+    phi = np.zeros(sub_length * N).reshape((sub_length, N))
+    y = np.zeros(M * sub_length).reshape((M, sub_length))
 
-    for t in trange(T):
-        np.random.shuffle(idxes)
+    for t in trange(sub_length):
+        rng.shuffle(idxes)
         acc = 0
         for i in range(1, N + 1):
             x_temp, y_temp = x_train[idxes[:i], :], y_train[idxes[:i]]
@@ -38,10 +38,35 @@ def compressive(
             acc = new_acc
         for m in range(M):
             y[m][t] = np.sum(A[m] * phi[t])
+
+    return np.sum(y, axis=1)
+
+def compressive_mp(
+        x_train: Array,
+        y_train: Array,
+        x_valid: Optional[Array] = None,
+        y_valid: Optional[Array] = None,
+        clf: Optional[Any] = None,
+        num_perm: int=500,
+        num_measure: int=500,
+        truncated_threshold: float=0.0001, 
+        num_proc: int=1
+) -> Array:
+    T = num_perm
+    N = len(y_train)
+    M = num_measure
+
+    A = np.random.randint(2, size=(M, N)).astype(float)
+    A = (2 * A - 1) / np.sqrt(M)
+
+    sub_length = split_permutation_num(T, num_proc)
+    pool = Pool()
+    func = partial(subtask, x_train, y_train, x_valid, y_valid, clf, A, M)
+    ret = pool.map(func, sub_length)
+    pool.close()
+    pool.join()
     
-    yp = np.zeros(M)
-    for m in range(M):
-        yp[m] = sum(y[m]) / T
+    yp = np.sum([r for r in ret], axis=0) / T
         
     print('Solving the feasibility problem')
     

@@ -38,7 +38,10 @@ class DataShapley(Valuation):
         self.clf = clf
         self.num_proc = para_tbl.num_proc
         self.num_perm = para_tbl.num_perm
+        self.num_utility = para_tbl.num_utility
+        self.num_measure = para_tbl.num_measure
         self.num_q_split = para_tbl.num_q_split
+        self.lambda_param = para_tbl.lambda_param
         self.truncated_threshold = para_tbl.truncated_threshold
         
         # Customized parameters
@@ -55,12 +58,17 @@ class DataShapley(Valuation):
         args = [self.x_train, self.y_train, self.x_valid, self.y_valid, self.clf]
         if isinstance(solver, str):
             match solver:
+                case "exact_mp":
+                    self.values = exact_mp(*args, self.num_proc)
                 case "monte_carlo":
                     self.values = monte_carlo(*args,
                                               self.num_perm)
                 case "monte_carlo_mp":
                     self.values = monte_carlo_mp(*args,
                                               self.num_perm, self.num_proc)
+                case "monte_carlo_ulimit_mp":
+                    self.values = monte_carlo_ulimit_mp(*args,
+                                              self.num_proc, self.num_utility)
                 case "truncated_mc":
                     self.values = truncated_mc(*args,
                                                self.num_perm,
@@ -69,48 +77,102 @@ class DataShapley(Valuation):
                     self.values = truncated_mc_mp(*args,
                                                self.num_perm,
                                                self.truncated_threshold, self.num_proc)
+                case "truncated_mc_ulimit_mp":
+                    self.values = truncated_mc_ulimit_mp(*args, self.num_proc, self.num_utility, self.truncated_threshold)
                 case "monte_carlo_antithetic":
                     self.values = monte_carlo_antithetic(*args,
                                               self.num_perm)
                 case "monte_carlo_antithetic_mp":
                     self.values = monte_carlo_antithetic_mp(*args,
-                                              self.num_perm, self.truncated_threshold,self.num_proc)
+                                              self.num_perm, self.truncated_threshold, self.num_proc)
+                case "monte_carlo_antithetic_ulimit_mp":
+                    self.values = monte_carlo_antithetic_ulimit_mp(*args, self.num_proc, self.num_utility, self.truncated_threshold)
                 case "owen":
                     self.values = owen(*args, self.num_perm, self.num_q_split)
                 case "owen_mp":
                     self.values = owen_mp(*args, self.num_perm, self.num_q_split, self.num_proc)
+                case "owen_ulimit_mp":
+                    self.values = owen_ulimit_mp(*args, self.num_proc, self.num_utility, self.num_q_split)
                 case "owen_halved":
                     self.values = owen_halved(*args, self.num_perm, self.num_q_split)
                 case "owen_halved_mp":
                     self.values = owen_halved_mp(*args, self.num_perm, self.num_q_split, self.num_proc)
+                case "owen_halved_ulimit_mp":
+                    self.values = owen_halved_ulimit_mp(*args, self.num_proc, self.num_utility, self.num_q_split)
                 case "stratified":
                     self.values = stratified(*args, self.num_perm)
                 case "stratified_mp":
                     self.values = stratified_mp(*args, self.num_perm, self.num_proc)
+                case "stratified_ulimit_mp":
+                    self.values = stratified_ulimit_mp(*args, self.num_proc, self.num_utility)
                 case "complementary":
                     self.values = complementary(*args, self.num_perm)
                 case "complementary_mp":
                     self.values = complementary_mp(*args, self.num_perm, self.num_proc)
+                case "complementary_ulimit_mp":
+                    self.values = complementary_ulimit_mp(*args, self.num_proc, self.num_utility)
+                case "complementary_warmup_ulimit_mp":
+                    self.values = complementary_warmup_ulimit_mp(*args, self.num_proc, self.num_utility)
                 case "svarm":
                     self.values = svarm(*args, self.num_perm)
                 case "svarm_mp":
                     self.values = svarm_mp(*args, self.num_perm, self.num_proc)
+                case "svarm_ulimit_mp":
+                    self.values = svarm_ulimit_mp(*args, self.num_proc, self.num_utility)
                 case "svarm_stratified":
                     self.values = svarm_stratified(*args, self.num_perm)
                 case "svarm_stratified_mp":
                     self.values = svarm_stratified_mp(*args, self.num_perm, self.num_proc)
+                case "svarm_stratified_ulimit_mp":
+                    self.values = svarm_stratified_ulimit_mp(*args, self.num_proc, self.num_utility)
                 case "kernel_shap":
                     self.values = kernel_shap(*args,
                                               self.num_perm)
                 case "kernel_shap_mp":
                     self.values = kernel_shap_mp(*args,
                                               self.num_perm, self.num_proc)
+                case "kernel_shap_ulimit_mp":
+                    self.values = kernel_shap_ulimit_mp(*args, self.num_proc, self.num_utility)
+                case "kernel_herding_mallows_ulimit_mp":
+                    self.values = kernel_herding_ulimit_mp(*args, self.num_proc, self.num_utility, "mallows", self.lambda_param)
+                case "kernel_herding_kendall_ulimit_mp":
+                    self.values = kernel_herding_ulimit_mp(*args, self.num_proc, self.num_utility, "kendall", self.lambda_param)
+                case "kernel_herding_spearman_ulimit_mp":
+                    self.values = kernel_herding_ulimit_mp(*args, self.num_proc, self.num_utility, "spearman", self.lambda_param)
+                case "orthogonal_ulimit_mp":
+                    self.values = orthogonal_ulimit_mp(*args, self.num_proc, self.num_utility)
+                case "sbq_ulimit_mp":
+                    self.values = sbq_ulimit_mp(*args, self.num_proc, self.num_utility, self.lambda_param)
+                case "sobol_ulimit_mp":
+                    self.values = sobol_ulimit_mp(*args, self.num_proc, self.num_utility)
                 case "improved_kernel_shap":
                     self.values = improved_kernel_shap(*args,
                                               self.num_perm)
                 case "improved_kernel_shap_mp":
                     self.values = improved_kernel_shap_mp(*args,
                                               self.num_perm, self.num_proc)
+                case "improved_kernel_shap_ulimit_mp":
+                    self.values = improved_kernel_shap_ulimit_mp(*args, self.num_proc, self.num_utility)
+                case "group_testing":
+                    self.values = group_testing(*args,
+                                              self.num_perm, self.truncated_threshold)
+                case "group_testing_mp":
+                    self.values = group_testing_mp(*args,
+                                              self.num_perm, self.num_proc, self.truncated_threshold)
+                case "group_testing_ulimit_mp":
+                    self.values = group_testing_ulimit_mp(*args, self.num_proc,
+                                              self.num_utility, self.truncated_threshold)
+                case "compressive":
+                    self.values = compressive(*args,
+                                              self.num_perm, self.num_measure, self.truncated_threshold)
+                case "compressive_mp":
+                    self.values = compressive_mp(*args,
+                                              self.num_perm, self.num_measure, self.truncated_threshold, self.num_proc)
+                case "compressive_ulimit_mp":
+                    self.values = compressive_ulimit_mp(*args, self.num_proc,
+                                              self.num_utility, self.num_measure, self.truncated_threshold)
+                case "gels_ulimit_mp":
+                    self.values = gels_ulimit_mp(*args, self.num_proc, self.num_utility)
                 case _:
                     raise ValueError("[!] No matched solver")
         elif isinstance(solver, Callable[..., Array]):

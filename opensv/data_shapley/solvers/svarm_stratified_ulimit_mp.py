@@ -163,6 +163,7 @@ def svarm_stratified_ulimit_mp(
                 cm[N - sz][i] = 1
 
     # T = T // 2
+    print(T)
 
     sub_length = split_permutation_num(T, num_proc)
     pool = Pool()
@@ -175,6 +176,8 @@ def svarm_stratified_ulimit_mp(
     shm2 = np.sum([r[1] for r in ret], axis=0)
     cp2 = np.sum([r[2] for r in ret], axis=0)
     cm2 = np.sum([r[3] for r in ret], axis=0)
+    
+    # print(cp, cp2, cm, cm2)
 
     cp = (cp + cp2).clip(min=1)
     cm = (cm + cm2).clip(min=1)

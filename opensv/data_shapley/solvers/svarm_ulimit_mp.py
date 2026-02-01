@@ -90,6 +90,7 @@ def svarm_ulimit_mp(
 
         sz = np.random.choice(N, 1)
         selected = np.random.choice(idx, sz, replace=False)
+        selected = np.append(selected, i)
         shp[i] = get_utility(x_train[selected, :], y_train[selected], x_valid, y_valid, clf)
 
         sz = np.random.choice(N, 1)

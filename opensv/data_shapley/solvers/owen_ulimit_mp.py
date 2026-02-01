@@ -53,6 +53,8 @@ def owen_ulimit_mp(
     T = num_utility // (num_q_split * N * 2)
     if T <= 0:
         num_q_split = num_utility // (N * 2)
+        if num_q_split < 2:
+            num_q_split = 2
         T = num_utility // (num_q_split * N * 2)
 
     sub_length = split_permutation_num(T, num_proc)
@@ -63,6 +65,6 @@ def owen_ulimit_mp(
     pool.join()
     ret_val = np.asarray(ret)
     val = ret_val.sum(axis=0) / (T * num_q_split)
-    # val = val * (final_acc - init_acc) / np.sum(val)
+    val = val * (final_acc - init_acc) / np.sum(val)
 
     return val

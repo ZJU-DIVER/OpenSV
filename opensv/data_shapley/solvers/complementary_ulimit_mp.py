@@ -52,7 +52,7 @@ def complementary_ulimit_mp(
     init_acc = get_utility([], [], x_valid, y_valid, clf)
     final_acc = get_utility(x_train, y_train, x_valid, y_valid, clf)
     
-    T = num_utility# // 2
+    T = num_utility // 2
     N = len(y_train)
 
     print(T)
@@ -73,17 +73,9 @@ def complementary_ulimit_mp(
     pool.close()
     pool.join()
     
-    # sv = np.sum([r[0] for r in ret], axis=0)
-    # cnt = np.sum([r[1] for r in ret], axis=0)
+    sv = np.sum([r[0] for r in ret], axis=0)
+    cnt = np.sum([r[1] for r in ret], axis=0)
 
-    for r in ret:
-        sv += r[0]
-        cnt += r[1]
-    
-
-    print(np.sum(cnt,axis=-1))
-
-    print(sv.shape, cnt.shape)
     cnt = cnt.clip(min=1)
     sum_sv = sv / cnt / N
     val = np.sum(sum_sv, axis=1)

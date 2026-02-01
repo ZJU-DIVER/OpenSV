@@ -90,12 +90,12 @@ def stratified_ulimit_mp(
     init_acc = get_utility([], [], x_valid, y_valid, clf)
     final_acc = get_utility(x_train, y_train, x_valid, y_valid, clf)
     
-    M = num_utility
+    M = num_utility // 2
     N = len(y_train)
 
     sh = np.zeros(N * N).reshape((N, N))
     sum_cuad = np.zeros(N)
-    mexp = np.ceil(np.max([M / (2 * N * N), 2])).astype(int)
+    mexp = np.floor(np.max([M / (2 * N * N), 2])).astype(int)
 
     sub_length = split_permutation_num(N, num_proc)
     cur = 0
@@ -113,12 +113,15 @@ def stratified_ulimit_mp(
     sh = np.sum([r[0] for r in ret], axis=0)
     sum_cuad = np.sum([r[1] for r in ret], axis=0)
 
+    M = (num_utility - (mexp * N * N * 2)) // 2
     s2 = np.zeros(N * N).reshape((N, N))
     for player in trange(N):
         s2[player] = sum_cuad
     s2 = (s2 - sh ** 2 / mexp) / (mexp - 1)
     sum_s2 = np.sum(s2)
-    mst = np.ceil(s2 * M / sum_s2 - mexp)
+    mst = (M * s2 / sum_s2 - mexp)
+    mst = np.clip(mst, 0, None)
+    mst = np.floor(mst * M / np.sum(mst))
 
     pool = Pool()
     func = partial(subtask2, x_train, y_train, x_valid, y_valid, clf, mexp, mst, sh)
@@ -128,7 +131,7 @@ def stratified_ulimit_mp(
     ret_val = np.asarray(ret)
 
     sh = ret_val.sum(axis=0)
-    val = np.sum(sh, axis=1)
-    val = val * (final_acc - init_acc) / np.sum(val)
+    val = np.sum(sh, axis=1) / N
+    # val = val * (final_acc - init_acc) / np.sum(val)
 
     return val
